@@ -1,0 +1,13 @@
+div {
+    display: flex;
+    justify-content: center;
+  }
+
+  img {
+    width: 150px;
+    height: 150px;
+  }
+
+  h1 {
+    text-align: center;
+  }

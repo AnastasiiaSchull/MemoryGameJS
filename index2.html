@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <h1>Memory Game</h1>
+    <div id="messageText" style="color: crimson; font-size: 40px">
+      <table id="memoryTable">
+        <tr>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+        </tr>
+        <tr>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+        </tr>
+        <tr>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+          <td><img src="image/kaleidoscope.jpg" /></td>
+        </tr>
+      </table>
+    </div>
+    <div>
+      <button id="startBtn">Start</button>
+    </div>
+    <script>
+      let memorizedImages = []; // массив для хранения ссылок на изображения
+      let openedKaleidoscope = false; //  отслеживаем открытия калейдоскопа
+
+      document
+        .getElementById("startBtn")
+        .addEventListener("click", function () {
+          startGame();
+        });
+
+      function startGame() {
+        memorizedImages = [];
+        let images = [
+          "image/circle.jpg",
+          "image/heart.jpg",
+          "image/pentagon.gif",
+          "image/square.jpg",
+          "image/star.png",
+          "image/triangle.jpg",
+        ];
+        //concat(), чтобы объединить массив images с самим собой
+        let shuffledImages = shuffleImages(images.concat(images));
+
+        let table = document.getElementById("memoryTable");
+        let cells = table.getElementsByTagName("td");
+
+        for (let i = 0; i < cells.length; i++) {
+          let img = document.createElement("img");//создается <img> элемент для каждой ячейки
+          img.src = shuffledImages[i];
+          img.dataset.src = shuffledImages[i]; // сохраняем путь к изображению в атрибуте data-src
+
+          cells[i].innerHTML = "";
+          cells[i].appendChild(img);
+          memorizedImages.push(img);//чтобы сохранить и использовать их позже для сравнения при открытии карточек
+        }
+
+        setTimeout(function () {
+          hideImages(cells);
+        }, 2000);
+      }
+
+      function shuffleImages(images ) {
+          for (let i = images .length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1)); // выбираем случайный индекс от 0 до i
+            [images [i], images [j]] = [images [j], images [i]]; // меняем местами элементы с индексами i и j
+          }
+          return images ;
+        }
+
+      function hideImages() {
+        let table = document.getElementById("memoryTable");
+        let cells = table.getElementsByTagName("td");
+        for (let i = 0; i < cells.length; i++) {
+          let img = document.createElement("img"); //для каждой ячейки создаем новый элемент <img>
+          img.src = "image/kaleidoscope.jpg";
+          img.dataset.src = memorizedImages[i].src;
+          img.addEventListener("click", function () {
+            if (!openedKaleidoscope) {
+              this.src = this.dataset.src; // устанавливаем изображение из атрибута data-src
+              openedKaleidoscope = true;
+            }
+          });
+          cells[i].innerHTML = "";//очищаем содержимое каждой ячейки
+          cells[i].appendChild(img);//добавляем в нее изображение
+        }
+      }
+
+      let openCards = [];
+      let isProcessing = false;
+
+    document
+        .getElementById("memoryTable")
+        .addEventListener("click", function (event) {
+          if (
+            !isProcessing &&
+            event.target.tagName === "IMG" &&//событие клика произошло именно на элементе изображения
+            openCards.length < 2 &&
+            !openCards.includes(event.target)//и картинка еще не была добавлена в массив openCards
+          ) {
+            let img = event.target;
+            img.src = img.dataset.src;//меняем src на значение из атрибута data-src
+            openCards.push(img);
+
+            if (openCards.length === 2) {
+              isProcessing = true;
+              setTimeout(function () {//setTimeout вызывает checkMatch
+                checkMatch();
+              }, 1000);
+            }
+          }
+        });
+
+      function checkMatch() {
+        if (openCards[0].src === openCards[1].src) {
+          openCards.forEach((card) => {
+            card.style.opacity = 0.7; // делаем карточку полупрозрачной
+          });
+        } else {
+          openCards.forEach((card) => {
+            card.src = "image/kaleidoscope.jpg"; // прячем карточку обратно под калейдоскоп
+          });
+        }
+        openCards = [];
+        isProcessing = false;
+        if (
+          document.querySelectorAll('img[src="image/kaleidoscope.jpg"]')
+            .length === 0
+        ) {
+          showMessage("Congratulations! You've matched all the cards!");
+        }
+        let btn = document.getElementById("startBtn");
+        btn.style.display = "none";
+      }
+
+      function showMessage(message) {
+        let messageText = document.getElementById("messageText");
+        messageText.textContent = message;
+      }
+    </script>
+  </body>
+</html>
